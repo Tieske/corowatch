@@ -17,7 +17,6 @@ local M = coroutine       -- grab global table to update
 --   tkilllimit = when to kill, seconds
 --   cbwarn = warn callback, function
 --   warned = boolean; was cwwarn called already?
---   error = errormessage after kill, string
 --   killtime = point in time after which to kill the coroutine
 --   warntime = point in time after which to warn
 --   errmsg = errormessage if timedout, so if set, the coro should be dead
@@ -48,7 +47,7 @@ local checkhook = function()
     error(e.errmsg,2)
   elseif not e.warned and e.warntime and e.warntime < t then
     -- warn now
-    if e.cbwarn(cororunning()) then
+    if e.cbwarn() then
       -- returned positive, so reset timeouts
       if e.tkilllimit then e.killtime = t + e.tkilllimit end
       if e.twarnlimit then e.warntime = t + e.twarnlimit end
@@ -75,7 +74,8 @@ local createwatch = function(coro, tkilllimit, twarnlimit, cbwarn)
   entry.tkilllimit = tkilllimit
   entry.twarnlimit = twarnlimit
   entry.cbwarn = cbwarn
-  sethook(coro, checkhook, "l", 5000)
+  entry.hook = checkhook
+  sethook(coro, entry.hook, "l", 5000)
   register[coro] = entry
   return entry
 end
@@ -84,8 +84,8 @@ end
 -- returns current time in seconds. If not overridden, it will require luasocket and use
 -- socket.gettime() to get the current time.
 M.gettime = function()
-  if not socket then socket = require("socket") end
-  return socket.gettime()
+  M.gettime = require("socket").gettime
+  return M.gettime()
 end
 
 ---------------------------------------------------------------------------------------
@@ -95,7 +95,8 @@ end
 -- @param twarnlimit (optional) time in seconds it is allowed before cbwarn is called
 -- @param cbwarn (optional) callback executed before the coro is terminated. 
 -- If the callback returns false/nil the coro will be terminated, otherwise
--- the timeout is repeated
+-- the timeout is repeated. The callback has no parameters, but runs on the coroutine
+-- that is subject of the warning.
 -- @return coro
 local watch = function(coro, tkilllimit, twarnlimit, cbwarn)
   if getwatch(coro) then error("Cannot create a watch, there already is one") end
@@ -161,6 +162,13 @@ M.status = function(coro)
   else
     return corostatus(coro)
   end
+end
+
+-- export some internals for testing if requested
+if _TEST then
+  M._register = register
+  M._getwatch = getwatch
+  M._mainthread = mainthread
 end
 
 return M
