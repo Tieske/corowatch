@@ -5,9 +5,10 @@ Lua module to watch coroutine usage and kill a coroutine if it fails to yield in
 
 Implementation notes
 ====================
-To protect access to coroutines, the module must override the existing coroutine functions. Besides overriding the `create()`, `status()`, `yield()`, and `resume()` functions, it adds an additional `watch()` function to the global `coroutine` table. Additionally the global `debug.sethook()` is modified to prevent a coroutine from removing it's own 'watch' routine (from the paranoia department).
 
-__Important__: the module also has a `gettime()` function. The default function requires LuaSocket to use the `socket.gettime()` function. If you do not use LuaSocket, then it might be better to replace this function with a more lightweight implementation.
+1. To protect access to coroutines, the module must override the existing coroutine functions. Besides overriding the `create()`, `status()`, `yield()`, and `resume()` functions, it adds an additional `watch()` function to the global `coroutine` table. 
+1. Additionally the global `debug.sethook()` is modified to prevent a coroutine from removing it's own 'watch' routine (from the paranoia department).
+1. __Important__: the module also has a `gettime()` function. The default function requires LuaSocket to use the `socket.gettime()` function. If you do not use LuaSocket, then it might be better to replace this function with a more lightweight implementation.
 
 Usage
 =====
@@ -45,7 +46,16 @@ print(coroutine.resume(coroutine.watch(coroutine.create(f), kill_timeout, warn_t
 
 When run the example code returns the following results;
 ````
+Warning, coroutine might get killed....1
+Warning, coroutine might get killed....2
+Warning, coroutine might get killed....3
+now killing coroutine...
+false	Coroutine exceeded its allowed running time of 1 seconds, without yielding
 ````
+
+Tests
+=====
+Tests are located in the `./spec` folder and can be run using [busted](http://olivinelabs.com/busted/)
 
 License
 =======
