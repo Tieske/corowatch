@@ -170,5 +170,27 @@ describe("testing the corowatch module", function()
     assert(tt[4]-tt[3]-kill_expect < 0.1, "expected time difference to be less than 0.1 seconds")
     assert.are_equal("dead", coroutine.status(c))
   end)
+
+  it("checks that coroutine.wrap() works as expected with a watched coroutine", function()
+    local f = function() 
+        local t = coroutine.gettime() + 3
+        while t > coroutine.gettime() do
+          -- do something silly in a loop
+          local i = 0
+          i = i + 1
+          i = i - 1
+        end
+      end
+    local wf
+    -- create/run a watched coroutine from which 'wrap' is called
+    coroutine.resume(coroutine.watch(coroutine.create(function()
+          wf = coroutine.wrap(f)
+        end), 0.25))
+    -- now the coroutine embedded in wf should be watched
+    local one, two = wf()
+    assert.is_false(one)  -- failure report
+    assert.is_string(two) -- error message
+  end)
+  
   
 end)

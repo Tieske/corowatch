@@ -15,7 +15,7 @@ local corostatus = coroutine.status
 local corowrap = coroutine.wrap         --> TODO: to be implemented!!
 local coroyield = coroutine.yield
 local sethook = debug.sethook
-local watch
+local watch, resume, create
 local unpack = unpack or table.unpack  -- 5.1/5.2 compat issue
 
 -- create watch register; table indexed by coro with watch properties
@@ -129,6 +129,33 @@ coroutine.create = function(f)
   -- create and add watch
   return watch(corocreate(f), s.tkilllimit, s.twarnlimit, s.cb)
 end
+create = coroutine.create
+
+---------------------------------------------------------------------------------------
+-- This is the same as the regular coroutine.wrap(), except that when the running 
+-- coroutine is watched, then children spawned will also be watched with the same
+-- settings. To set sepecific settings for watching use coroutine.wrapf()
+-- @see coroutine.wrapf
+coroutine.wrap = function(f)
+  if not getwatch(cororunning()) then return corowrap(f) end  -- not watched
+  local coro = create(f)
+  return function(...) return resume(coro, ...) end
+end
+
+---------------------------------------------------------------------------------------
+-- This is the same as the regular coroutine.wrap(), except that the coroutine created
+-- is watched according to the parameters provided, and not according to the watch
+-- parameters of the currently running coroutine.
+-- @param f function to wrap
+-- @param tkilllimit see coroutine.create
+-- @param twarnlimit see coroutine.create
+-- @param cb see coroutine.create
+-- @see coroutine.create 
+-- @see coroutine.wrap
+coroutine.wrapf = function(f, tkilllimit, twarnlimit, cb)
+  local coro = watch(corocreate(f), tkilllimit, twarnlimit, cb)
+  return function(...) return resume(coro, ...) end
+end
 
 ---------------------------------------------------------------------------------------
 -- This is the same as the regular coroutine.resume().
@@ -154,6 +181,7 @@ coroutine.resume = function(coro, ...)
     return unpack(r)
   end
 end
+resume = coroutine.resume
 
 ---------------------------------------------------------------------------------------
 -- This is the same as the regular coroutine.yield().

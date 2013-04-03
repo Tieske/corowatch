@@ -6,15 +6,15 @@ Lua module to watch coroutine usage and kill a coroutine if it fails to yield in
 Implementation notes
 ====================
 
-1. To protect access to coroutines, the module must override the existing coroutine functions. Besides overriding the `create()`, `status()`, `yield()`, and `resume()` functions, it adds an additional `watch()` function to the global `coroutine` table. 
+1. To protect access to coroutines, the module must override the existing coroutine functions. Besides overriding the `create()`, `wrap()`, `status()`, `yield()`, and `resume()` functions, it adds additional functions `watch()` and `gettime()` to the global `coroutine` table. 
 1. Additionally the global `debug.sethook()` is modified to prevent a coroutine from removing it's own 'watch' routine (from the paranoia department).
-1. __Important__: the module also has a `gettime()` function. The default function requires LuaSocket to use the `socket.gettime()` function. If you do not use LuaSocket, then it might be better to replace this function with a more lightweight implementation.
+1. __Important__: The default `gettime()` function loads LuaSocket to use the `socket.gettime()` function. If you do not use LuaSocket, then it might be better to replace `coroutine.gettime()` with a more lightweight implementation.
 
 Usage
 =====
 Usage is fairly simple, call the `watch()` method on a coroutine to protect it and provide the timeouts and callbacks as required.
 
-Example:
+Example (see the `./examples` folder):
 
 ```lua
 require("corowatch")
