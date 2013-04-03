@@ -1,4 +1,59 @@
 corowatch
 =========
 
-Lua module to watch coroutine usage and kill a coroutine if it fails to yield in a timely manner.
+Lua module to watch coroutine usage and kill a coroutine if it fails to yield in a timely manner. The main purpose is preventing code from locking the Lua state.
+
+Implementation notes
+====================
+To protect access to coroutines, the module must override the existing coroutine functions. Besides overriding the `create()`, `status()`, `yield()`, and `resume()` functions, it adds an additional `watch()` function to the global `coroutine` table. Additionally the global `debug.sethook()` is modified to prevent a coroutine from removing it's own 'watch' routine (from the paranoia department).
+
+__Important__: the module also has a `gettime()` function. The default function requires LuaSocket to use the `socket.gettime()` function. If you do not use LuaSocket, then it might be better to replace this function with a more lightweight implementation.
+
+Usage
+=====
+Usage is fairly simple, call the `watch()` method on a coroutine to protect it and provide the timeouts and callbacks as required.
+
+Example:
+
+```lua
+require("corowatch")
+
+local f = function()
+  local callcount = 0
+  while true do
+    -- something for a coroutine to do here
+    callcount = callcount + 1
+  end
+end
+local kill_timeout = 1   -- seconds
+local warn_timeout = 0.8 -- seconds
+local warncount = 0
+local cb = function(cbtype)
+  if cbtype == "kill" then 
+    print("now killing coroutine...")
+  elseif cbtype == "warn" then 
+    warncount = warncount + 1
+    print("Warning, coroutine might get killed...." .. warncount)
+    if warncount < 4 then
+      return true   -- reset the timeouts
+    end
+  end
+end
+
+print(coroutine.resume(coroutine.watch(coroutine.create(f), kill_timeout, warn_timeout, cb)))
+````
+
+When run the example code returns the following results;
+````
+````
+
+License
+=======
+MIT license
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
