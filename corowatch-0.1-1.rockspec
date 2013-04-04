@@ -1,7 +1,7 @@
 package = "corowatch"
 version = "0.1-1"
 source = {
-  url = "https://getithere.tar.gz",
+  url = "https://github.com/Tieske/corowatch/archive/version_0.1.tar.gz",
   dir = "corowatch"
 }
 description = {
@@ -12,7 +12,7 @@ description = {
     by not yielding in a timely manner. Coroutines that
     take longer than the maximum specified can be killed.
   ]],
-  homepage = "http://",
+  homepage = "https://github.com/Tieske/corowatch",
   license = "MIT <http://opensource.org/licenses/MIT>"
 }
 dependencies = {
