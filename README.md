@@ -54,6 +54,10 @@ now killing coroutine...
 false	Coroutine exceeded its allowed running time of 1 seconds, without yielding
 ````
 
+Documentation
+=============
+The documentation is available [online at GitHub](http://tieske.github.com/corowatch/)
+
 Tests
 =====
 Tests are located in the `./spec` folder and can be run using [busted](http://olivinelabs.com/busted/)
