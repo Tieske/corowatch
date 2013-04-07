@@ -58,7 +58,7 @@ Limitations
 ===========
 The mechanics of this library depend on the debug library. A debug hook is set to repeatedly (once every 10000 VM instructions) check the coroutine for a time out. When a timeout is detected, an error is generated that will kill the coroutine (coroutine status will be 'dead'). There are two ways that it won't work;
 
-1. When a C function is being executed; the debughooks can only interrupt with Lua code, not with C code. So if C code takes too long or locks, it won't be interrupted.
+1. When a C function is being executed; the debughooks can only interrupt Lua code, not C code. So if C code takes too long or locks, it won't be interrupted.
 1. When the running code that gets interrupted is inside a protected call (Lua side `pcall()`, `xpcall()` or C-side `lua_pcall()`) then the error thrown by corowatch will not kill the coroutine, but it will be caught by that protected call.
 
 To mitigate these situations; the debughook is altered once the first error is thrown. It will from there on run every 1 VM instruction. This will then rethrow the same error directly after the C function or protected call that caught the previous error. This process is repeated until the coroutine dies, and effectively cascades the error up the callstack.
