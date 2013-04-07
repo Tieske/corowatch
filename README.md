@@ -71,6 +71,11 @@ Tests
 =====
 Tests are located in the `./spec` folder and can be run using [busted](http://olivinelabs.com/busted/)
 
+Changes
+=======
+- 0.1, 4-Apr-2013, initial release
+- 0.2, 7-Apr-2013, fixed debughook settings, improved performance
+
 License
 =======
 MIT license

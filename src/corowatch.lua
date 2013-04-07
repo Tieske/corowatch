@@ -4,7 +4,7 @@
 -- The module uses LuaSocket to get the time (socket.gettime() function). If you
 -- do not want that, override the coroutine.gettime() method with your own
 -- implementation.
--- Copyright (c) 2013 - Thijs Schreijer, http://www.thijsschreijer.nl
+-- Version 0.2, copyright (c) 2013 - Thijs Schreijer, http://www.thijsschreijer.nl
 -- @name corowatch
 -- @class module
 
