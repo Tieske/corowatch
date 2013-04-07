@@ -2,7 +2,7 @@ package = "corowatch"
 version = "0.1-1"
 source = {
   url = "https://github.com/Tieske/corowatch/archive/version_0.1.tar.gz",
-  dir = "corowatch"
+  dir = "corowatch-version_0.1"
 }
 description = {
   summary = "Watching and killing coroutines.",

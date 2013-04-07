@@ -12,11 +12,12 @@ local corocreate = coroutine.create
 local cororesume = coroutine.resume
 local cororunning = coroutine.running
 local corostatus = coroutine.status
-local corowrap = coroutine.wrap         --> TODO: to be implemented!!
+local corowrap = coroutine.wrap
 local coroyield = coroutine.yield
 local sethook = debug.sethook
 local watch, resume, create
 local unpack = unpack or table.unpack  -- 5.1/5.2 compat issue
+local hookcount = 10000
 
 -- create watch register; table indexed by coro with watch properties
 local register = setmetatable({},{__mode = "k"})  -- set weak keys
@@ -64,7 +65,7 @@ local checkhook = function()
   elseif e.killtime and e.killtime < t then
     if e.cb then e.cb("kill") end
     -- run hook now every instruction, to kill again and again if it persists (pcall/cboundary)
-    sethook(cororunning(), e.hook, "l", 1)
+    sethook(cororunning(), e.hook, "", 1)
     -- kill now
     e.errmsg = "Coroutine exceeded its allowed running time of "..tostring(e.tkilllimit).." seconds, without yielding"
     error(e.errmsg, 2)
@@ -83,7 +84,7 @@ local createwatch = function(coro, tkilllimit, twarnlimit, cb)
   entry.twarnlimit = twarnlimit
   entry.cb = cb
   entry.hook = checkhook
-  sethook(coro, entry.hook, "l", 5000)
+  sethook(coro, entry.hook, "", hookcount)
   register[coro] = entry
   return entry
 end
