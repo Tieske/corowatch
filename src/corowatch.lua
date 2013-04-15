@@ -16,6 +16,7 @@ local corostatus = coroutine.status
 local corowrap = coroutine.wrap
 local coroyield = coroutine.yield
 local sethook = debug.sethook
+local traceback = debug.traceback
 local watch, resume, create
 local unpack = unpack or table.unpack  -- 5.1/5.2 compat issue
 local hookcount = 10000
@@ -31,6 +32,7 @@ local register = setmetatable({},{__mode = "k"})  -- set weak keys
 --   warntime = point in time after which to warn
 --   errmsg = errormessage if timedout, so if set, the coro should be dead
 --   hook = function; the debughook in use
+--   debug = debug.traceback() at the time of protecting
 -- }
 
 
@@ -68,6 +70,12 @@ local checkhook = function()
     sethook(cororunning(), e.hook, "", 1)
     -- kill now
     e.errmsg = "Coroutine exceeded its allowed running time of "..tostring(e.tkilllimit).." seconds, without yielding"
+    if e.debug then
+      e.errmsg = e.errmsg ..
+       "\n============== traceback at coroutine creation time ====================\n" ..
+       e.debug ..
+       "\n======================== end of traceback ==============================" 
+    end
     error(e.errmsg, 2)
   end
 end
@@ -83,6 +91,7 @@ local createwatch = function(coro, tkilllimit, twarnlimit, cb)
   entry.twarnlimit = twarnlimit
   entry.cb = cb
   entry.hook = checkhook
+  entry.debug = traceback()
   sethook(coro, entry.hook, "", hookcount)
   register[coro] = entry
   return entry
