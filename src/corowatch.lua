@@ -4,7 +4,8 @@
 -- The module uses LuaSocket to get the time (socket.gettime() function). If you
 -- do not want that, override the coroutine.gettime() method with your own
 -- implementation.
--- Version 0.2, copyright (c) 2013 - Thijs Schreijer, http://www.thijsschreijer.nl
+--
+-- Version 0.2, [copyright (c) 2013 - Thijs Schreijer](http://www.thijsschreijer.nl)
 -- @name corowatch
 -- @class module
 
@@ -34,7 +35,7 @@ local register = setmetatable({},{__mode = "k"})  -- set weak keys
 
 
 local mainthread = {}  -- for 5.1 where there is no main thread access, running() returns nil
----------------------------------------------------------------------------------------
+
 -- Gets the entry for the coro from the coroutine register.
 -- @return the coroutine entry from the register
 local getwatch = function(coro)
@@ -42,7 +43,6 @@ local getwatch = function(coro)
 end
 
 
----------------------------------------------------------------------------------------
 -- Debughook function, to check for timeouts
 local checkhook = function()
   local e = getwatch()
@@ -72,7 +72,6 @@ local checkhook = function()
   end
 end
 
----------------------------------------------------------------------------------------
 -- Creates an entry in the coroutine register. If it already exists, existing values
 -- will be overwritten (in the existing entry) with the new values.
 -- @param coro coroutine for which to create the entry
