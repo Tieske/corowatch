@@ -5,3 +5,5 @@ format='discount'
 file='./src/corowatch.lua'
 dir='doc'
 readme='readme.md'
+sort=true
+

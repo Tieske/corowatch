@@ -34,11 +34,11 @@
 
 
 <h2>Modules</h2>
-<ul>
+<ul class="nowrap">
   <li><strong>corowatch</strong></li>
 </ul>
 <h2>Topics</h2>
-<ul>
+<ul class="nowrap">
   <li><a href="topics/readme.md.html">readme.md</a></li>
 </ul>
 
@@ -61,45 +61,45 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#coroutine.gettime">coroutine.gettime&nbsp;()</a></td>
-	<td class="summary">returns current time in seconds.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#coroutine.watch">coroutine.watch&nbsp;(coro, tkilllimit, twarnlimit, cb)</a></td>
-	<td class="summary">Protects a coroutine from running too long without yielding.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#coroutine.create">coroutine.create&nbsp;(f)</a></td>
+	<td class="name" nowrap><a href="#coroutine.create">coroutine.create (f)</a></td>
 	<td class="summary">This is the same as the regular coroutine.create(), except that when the running
  coroutine is watched, then children spawned will also be watched with the same
  settings.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#coroutine.wrap">coroutine.wrap&nbsp;(f)</a></td>
+	<td class="name" nowrap><a href="#coroutine.gettime">coroutine.gettime ()</a></td>
+	<td class="summary">returns current time in seconds.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#coroutine.resume">coroutine.resume (coro, ...)</a></td>
+	<td class="summary">This is the same as the regular coroutine.resume().</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#coroutine.status">coroutine.status (coro)</a></td>
+	<td class="summary">This is the same as the regular coroutine.status().</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#coroutine.watch">coroutine.watch (coro, tkilllimit, twarnlimit, cb)</a></td>
+	<td class="summary">Protects a coroutine from running too long without yielding.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#coroutine.wrap">coroutine.wrap (f)</a></td>
 	<td class="summary">This is the same as the regular coroutine.wrap(), except that when the running
  coroutine is watched, then children spawned will also be watched with the same
  settings.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#coroutine.wrapf">coroutine.wrapf&nbsp;(f, tkilllimit, twarnlimit, cb)</a></td>
+	<td class="name" nowrap><a href="#coroutine.wrapf">coroutine.wrapf (f, tkilllimit, twarnlimit, cb)</a></td>
 	<td class="summary">This is the same as the regular coroutine.wrap(), except that the coroutine created
  is watched according to the parameters provided, and not according to the watch
  parameters of the currently running coroutine.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#coroutine.resume">coroutine.resume&nbsp;(coro, ...)</a></td>
-	<td class="summary">This is the same as the regular coroutine.resume().</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#coroutine.yield">coroutine.yield&nbsp;(...)</a></td>
+	<td class="name" nowrap><a href="#coroutine.yield">coroutine.yield (...)</a></td>
 	<td class="summary">This is the same as the regular coroutine.yield().</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#coroutine.status">coroutine.status&nbsp;(coro)</a></td>
-	<td class="summary">This is the same as the regular coroutine.status().</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#debug.sethook">debug.sethook&nbsp;(coro, ...)</a></td>
+	<td class="name" nowrap><a href="#debug.sethook">debug.sethook (coro, ...)</a></td>
 	<td class="summary">This is the same as the regular debug.sethook(), except that when trying to set a
  hook on a coroutine that is being watched, if will throw an error.</td>
 	</tr>
@@ -112,8 +112,31 @@
     <h2><a name="Functions"></a>Functions</h2>
     <dl class="function">
     <dt>
+    <a name = "coroutine.create"></a>
+    <strong>coroutine.create (f)</strong>
+    </dt>
+    <dd>
+    This is the same as the regular coroutine.create(), except that when the running
+ coroutine is watched, then children spawned will also be watched with the same
+ settings.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">f</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "coroutine.gettime"></a>
-    <strong>coroutine.gettime&nbsp;()</strong>
+    <strong>coroutine.gettime ()</strong>
     </dt>
     <dd>
     returns current time in seconds.  If not overridden, it will require luasocket and use
@@ -126,28 +149,79 @@
 
 </dd>
     <dt>
+    <a name = "coroutine.resume"></a>
+    <strong>coroutine.resume (coro, ...)</strong>
+    </dt>
+    <dd>
+    This is the same as the regular coroutine.resume().
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">coro</span>
+
+
+
+        </li>
+        <li><span class="parameter">...</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "coroutine.status"></a>
+    <strong>coroutine.status (coro)</strong>
+    </dt>
+    <dd>
+    This is the same as the regular coroutine.status().
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">coro</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "coroutine.watch"></a>
-    <strong>coroutine.watch&nbsp;(coro, tkilllimit, twarnlimit, cb)</strong>
+    <strong>coroutine.watch (coro, tkilllimit, twarnlimit, cb)</strong>
     </dt>
     <dd>
     Protects a coroutine from running too long without yielding.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">coro</span>
+         coroutine to be protected
+        </li>
+        <li><span class="parameter">tkilllimit</span>
+         (optional) time in seconds it is allowed to run without yielding
+        </li>
+        <li><span class="parameter">twarnlimit</span>
+         (optional) time in seconds it is allowed before cb is called
+ (must be smaller than tkilllimit)
+        </li>
+        <li><span class="parameter">cb</span>
+         (optional) callback executed when the kill or warn limit is reached.
  The callback has 1 parameter (string value being either "warn" or "kill"), but runs
  on the coroutine that is subject of the warning. If the "warn" callback returns a
  truthy value (neither false, nor nil) the coro the timeouts for kill and warn limits
  will be reset (buying more time for the coroutine to finish its business).
  NOTE: the callback runs inside a debughook.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">coro</span>
-         coroutine to be protected</li>
-        <li><span class="parameter">tkilllimit</span>
-         (optional) time in seconds it is allowed to run without yielding</li>
-        <li><span class="parameter">twarnlimit</span>
-         (optional) time in seconds it is allowed before cb is called
- (must be smaller than tkilllimit)</li>
-        <li><span class="parameter">cb</span>
-         (optional) callback executed when the kill or warn limit is reached. </li>
+        </li>
     </ul>
 
     <h3>Returns:</h3>
@@ -161,30 +235,8 @@
 
 </dd>
     <dt>
-    <a name = "coroutine.create"></a>
-    <strong>coroutine.create&nbsp;(f)</strong>
-    </dt>
-    <dd>
-    This is the same as the regular coroutine.create(), except that when the running
- coroutine is watched, then children spawned will also be watched with the same
- settings.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">f</span>
-
-
-</li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
     <a name = "coroutine.wrap"></a>
-    <strong>coroutine.wrap&nbsp;(f)</strong>
+    <strong>coroutine.wrap (f)</strong>
     </dt>
     <dd>
     This is the same as the regular coroutine.wrap(), except that when the running
@@ -196,12 +248,13 @@
         <li><span class="parameter">f</span>
 
 
-</li>
+
+        </li>
     </ul>
 
 
 
-    <h3>see also:</h3>
+    <h3>See also:</h3>
     <ul>
          <a href="index.html#coroutine.wrapf">coroutine.wrapf</a>
     </ul>
@@ -210,7 +263,7 @@
 </dd>
     <dt>
     <a name = "coroutine.wrapf"></a>
-    <strong>coroutine.wrapf&nbsp;(f, tkilllimit, twarnlimit, cb)</strong>
+    <strong>coroutine.wrapf (f, tkilllimit, twarnlimit, cb)</strong>
     </dt>
     <dd>
     This is the same as the regular coroutine.wrap(), except that the coroutine created
@@ -220,18 +273,22 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">f</span>
-         function to wrap</li>
+         function to wrap
+        </li>
         <li><span class="parameter">tkilllimit</span>
-         see coroutine.create</li>
+         see coroutine.create
+        </li>
         <li><span class="parameter">twarnlimit</span>
-         see coroutine.create</li>
+         see coroutine.create
+        </li>
         <li><span class="parameter">cb</span>
-         see coroutine.create</li>
+         see coroutine.create
+        </li>
     </ul>
 
 
 
-    <h3>see also:</h3>
+    <h3>See also:</h3>
     <ul>
          <li><a href="index.html#coroutine.create">coroutine.create</a></li>
          <li><a href="index.html#coroutine.wrap">coroutine.wrap</a></li>
@@ -240,32 +297,8 @@
 
 </dd>
     <dt>
-    <a name = "coroutine.resume"></a>
-    <strong>coroutine.resume&nbsp;(coro, ...)</strong>
-    </dt>
-    <dd>
-    This is the same as the regular coroutine.resume().
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">coro</span>
-
-
-</li>
-        <li><span class="parameter">...</span>
-
-
-</li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
     <a name = "coroutine.yield"></a>
-    <strong>coroutine.yield&nbsp;(...)</strong>
+    <strong>coroutine.yield (...)</strong>
     </dt>
     <dd>
     This is the same as the regular coroutine.yield().
@@ -275,27 +308,8 @@
         <li><span class="parameter">...</span>
 
 
-</li>
-    </ul>
 
-
-
-
-
-</dd>
-    <dt>
-    <a name = "coroutine.status"></a>
-    <strong>coroutine.status&nbsp;(coro)</strong>
-    </dt>
-    <dd>
-    This is the same as the regular coroutine.status().
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">coro</span>
-
-
-</li>
+        </li>
     </ul>
 
 
@@ -305,7 +319,7 @@
 </dd>
     <dt>
     <a name = "debug.sethook"></a>
-    <strong>debug.sethook&nbsp;(coro, ...)</strong>
+    <strong>debug.sethook (coro, ...)</strong>
     </dt>
     <dd>
     This is the same as the regular debug.sethook(), except that when trying to set a
@@ -316,11 +330,13 @@
         <li><span class="parameter">coro</span>
 
 
-</li>
+
+        </li>
         <li><span class="parameter">...</span>
 
 
-</li>
+
+        </li>
     </ul>
 
 
@@ -334,7 +350,7 @@
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.3</a></i>
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
