@@ -156,10 +156,10 @@ end
 -- is watched according to the parameters provided, and not according to the watch
 -- parameters of the currently running coroutine.
 -- @param f function to wrap
--- @param tkilllimit see coroutine.create
--- @param twarnlimit see coroutine.create
--- @param cb see coroutine.create
--- @see coroutine.create 
+-- @param tkilllimit see coroutine.watch
+-- @param twarnlimit see coroutine.watch
+-- @param cb see coroutine.watch
+-- @see coroutine.create
 -- @see coroutine.wrap
 coroutine.wrapf = function(f, tkilllimit, twarnlimit, cb)
   local coro = watch(corocreate(f), tkilllimit, twarnlimit, cb)
