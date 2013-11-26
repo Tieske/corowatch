@@ -21,6 +21,8 @@ local watch, resume, create
 local unpack = unpack or table.unpack  -- 5.1/5.2 compat issue
 local hookcount = 10000
 
+local M = {}    -- module table
+
 -- create watch register; table indexed by coro with watch properties
 local register = setmetatable({},{__mode = "k"})  -- set weak keys
 -- register element = {
@@ -49,7 +51,7 @@ end
 local checkhook = function()
   local e = getwatch()
   if not e then return end  -- not being watched
-  local t = coroutine.gettime()
+  local t = M.gettime()
   if e.errmsg then
     -- the coro is tagged with an error. This means that somewhere the error
     -- was thrown, but the coro didn't die (probably a pcall in between). The coro should have died
@@ -100,9 +102,9 @@ end
 ---------------------------------------------------------------------------------------
 -- returns current time in seconds. If not overridden, it will require luasocket and use
 -- socket.gettime() to get the current time.
-coroutine.gettime = function()
-  coroutine.gettime = require("socket").gettime
-  return coroutine.gettime()
+M.gettime = function()
+  M.gettime = require("socket").gettime
+  return M.gettime()
 end
 
 ---------------------------------------------------------------------------------------
@@ -118,7 +120,7 @@ end
 -- will be reset (buying more time for the coroutine to finish its business).
 -- NOTE: the callback runs inside a debughook.
 -- @return coro
-coroutine.watch = function(coro, tkilllimit, twarnlimit, cb)
+M.watch = function(coro, tkilllimit, twarnlimit, cb)
   if getwatch(coro) then error("Cannot create a watch, there already is one") end
   assert(tkilllimit or twarnlimit, "Either kill limit or warn limit must be provided")
   if twarnlimit then assert(cb, "A callback function must be provided when adding a warnlimit") end
@@ -126,26 +128,26 @@ coroutine.watch = function(coro, tkilllimit, twarnlimit, cb)
   createwatch(coro, tkilllimit, twarnlimit, cb)
   return coro
 end
-watch = coroutine.watch
+watch = M.watch
 
 ---------------------------------------------------------------------------------------
 -- This is the same as the regular coroutine.create(), except that when the running 
 -- coroutine is watched, then children spawned will also be watched with the same
 -- settings.
-coroutine.create = function(f)
+M.create = function(f)
   local s = getwatch(cororunning())
   if not s then return corocreate(f) end  -- I'm not being watched
   -- create and add watch
   return watch(corocreate(f), s.tkilllimit, s.twarnlimit, s.cb)
 end
-create = coroutine.create
+create = M.create
 
 ---------------------------------------------------------------------------------------
 -- This is the same as the regular coroutine.wrap(), except that when the running 
 -- coroutine is watched, then children spawned will also be watched with the same
 -- settings. To set sepecific settings for watching use coroutine.wrapf()
 -- @see coroutine.wrapf
-coroutine.wrap = function(f)
+M.wrap = function(f)
   if not getwatch(cororunning()) then return corowrap(f) end  -- not watched
   local coro = create(f)
   return function(...) return resume(coro, ...) end
@@ -161,14 +163,14 @@ end
 -- @param cb see coroutine.watch
 -- @see coroutine.create
 -- @see coroutine.wrap
-coroutine.wrapf = function(f, tkilllimit, twarnlimit, cb)
+M.wrapf = function(f, tkilllimit, twarnlimit, cb)
   local coro = watch(corocreate(f), tkilllimit, twarnlimit, cb)
   return function(...) return resume(coro, ...) end
 end
 
 ---------------------------------------------------------------------------------------
 -- This is the same as the regular coroutine.resume().
-coroutine.resume = function(coro, ...)
+M.resume = function(coro, ...)
   assert(type(coro) == "thread", "Expected thread, got "..type(coro))
   local e = getwatch(coro)
   if e then
@@ -178,7 +180,7 @@ coroutine.resume = function(coro, ...)
       -- but didn't so it is in an 'undetermined' state. Return error, don't resume
       return false, e.errmsg
     end
-    local t = coroutine.gettime()
+    local t = M.gettime()
     if e.tkilllimit then e.killtime = t + e.tkilllimit end
     if e.twarnlimit then e.warntime = t + e.twarnlimit end
     e.warned = nil
@@ -190,11 +192,11 @@ coroutine.resume = function(coro, ...)
     return unpack(r)
   end
 end
-resume = coroutine.resume
+resume = M.resume
 
 ---------------------------------------------------------------------------------------
 -- This is the same as the regular coroutine.yield().
-coroutine.yield = function(...)
+M.yield = function(...)
   local e = getwatch()
   if e then 
     if e.errmsg then
@@ -212,7 +214,7 @@ end
 
 ---------------------------------------------------------------------------------------
 -- This is the same as the regular coroutine.status().
-coroutine.status = function(coro)
+M.status = function(coro)
   if (getwatch(coro) or {}).errmsg then
     return "dead"
   else
@@ -223,7 +225,7 @@ end
 ---------------------------------------------------------------------------------------
 -- This is the same as the regular debug.sethook(), except that when trying to set a 
 -- hook on a coroutine that is being watched, if will throw an error.
-debug.sethook = function(coro, ...)
+M.sethook = function(coro, ...)
   if getwatch(coro) then
     error("Cannot set a debughook because corowatch is watching this coroutine", 2)
   end
@@ -231,10 +233,47 @@ debug.sethook = function(coro, ...)
   return sethook(coro, ...)
 end
 
--- export some internals for testing if requested
-if _TEST then
-  coroutine._register = register
-  coroutine._getwatch = getwatch
+---------------------------------------------------------------------------------------
+-- Export the corowatch function to an external table, or the global environment.
+-- The functions exported are `create`, `yield`, `resume`, `running`, `status`, and `wrap`.
+-- If the provided table contains subtables `coroutine` and/or `debug` then it is assumed to
+-- be a function/global environment and `sethook` will be exported as well (exports will then
+-- go into the two subtables)
+-- @param t table (optional) to which to export the coroutine functions. 
+-- @return the table provided, or a new table if non was provided, with the exported functions
+-- @usage-- monkey patch global environment, both coroutine and debug tables
+-- require("corowatch").export(_M)
+M.export = function(t)
+  t = t or {}
+  local c, d 
+  assert(type(t) == "table", "Expected table, got "..type(t))
+  if (type(t.debug) == "table") or type(t.coroutine == "table") then
+    -- we got a global table, so monkeypatch debug and coroutine table
+    d = t.debug
+    c = t.coroutine
+  else
+    -- we got something else, just export coroutine here
+    d = nil
+    c = t
+  end
+  if type(d) == "table" then
+    d.sethook = M.sethook
+  end
+  if type(c) == "table" then
+    c.yield = M.yield
+    c.create = M.create
+    c.resume = M.resume
+    c.running = M.running
+    c.status = M.status
+    c.wrap = M.wrap
+  end
+  return t
 end
 
-return coroutine
+-- export some internals for testing if requested
+if _TEST then
+  M._register = register
+  M._getwatch = getwatch
+end
+
+return M
