@@ -20,7 +20,7 @@ Usage is fairly simple, call the `watch()` method on a coroutine to protect it a
 Example (see the `./examples` folder):
 
 ```lua
-require("corowatch")
+require("corowatch").export(_G) -- monkey patch the globals
 
 local f = function()
   local callcount = 0
@@ -83,8 +83,9 @@ Tests are located in the `./spec` folder and can be run using [busted](http://ol
 Changes
 =======
 
-- 0.1, 4-Apr-2013, initial release
+- 1.0, 4-Feb-2014, no automatic monkey patching of globals anymore
 - 0.2, 7-Apr-2013, fixed debughook settings, improved performance
+- 0.1, 4-Apr-2013, initial release
 
 
 License

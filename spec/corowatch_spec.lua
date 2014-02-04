@@ -4,6 +4,7 @@ describe("testing the corowatch module", function()
   
   setup(function()
     corowatch = require("corowatch")
+    corowatch.export(_G)
   end)
   
   teardown(function()
@@ -17,19 +18,24 @@ describe("testing the corowatch module", function()
   end)
   
   it("Checks exported methods", function()
-    assert.are_equal(corowatch.watch,coroutine.watch)
+    local coroutine = {}
+    local debug = {}
+    local globals = {coroutine = coroutine, debug = debug}
+    corowatch.export(globals)
+    --assert.are_equal(corowatch.watch,coroutine.watch)
     assert.are_equal(corowatch.create,coroutine.create)
     assert.are_equal(corowatch.yield,coroutine.yield)
     assert.are_equal(corowatch.resume,coroutine.resume)
     assert.are_equal(corowatch.wrap,coroutine.wrap)
-    assert.are_equal(corowatch.running,coroutine.running)
+    --assert.are_equal(corowatch.running,coroutine.running)
     assert.are_equal(corowatch.status,coroutine.status)
+    assert.are_equal(corowatch.sethook,debug.sethook)
   end)
     
   it("Checks a coroutine being registered when watched", function()
     local kill_expect, warn_expect, cb_expect = 2, 1, function() end
     assert.is_nil(next(corowatch._register))  -- check register is empty when starting
-    local c = coroutine.watch(coroutine.create(function() end), kill_expect, warn_expect, cb_expect)
+    local c = corowatch.watch(coroutine.create(function() end), kill_expect, warn_expect, cb_expect)
     local w = corowatch._register[c]
     assert.not_is_nil(w)
     assert.are_equal(kill_expect, w.tkilllimit)
@@ -52,7 +58,7 @@ describe("testing the corowatch module", function()
           w[k] = v
         end
       end
-    local c = coroutine.watch(coroutine.create(f), kill_expect, warn_expect, cb_expect)
+    local c = corowatch.watch(coroutine.create(f), kill_expect, warn_expect, cb_expect)
     local t = corowatch.gettime()
     coroutine.resume(c)
     assert.are_equal(kill_expect, w.tkilllimit)
@@ -71,7 +77,7 @@ describe("testing the corowatch module", function()
     local f = function()
         coroutine.yield(123, "abc")
       end
-    local c = coroutine.watch(coroutine.create(f), kill_expect, warn_expect, cb_expect)
+    local c = corowatch.watch(coroutine.create(f), kill_expect, warn_expect, cb_expect)
     local ok, one, two = coroutine.resume(c)
     local w = corowatch._register[c]
     assert.is_true(ok)
@@ -88,18 +94,18 @@ describe("testing the corowatch module", function()
   end)
 
   it("Checks errors when creating a watch", function()
-    local c = coroutine.watch(coroutine.create(function() end), 2, 1, function() end)
+    local c = corowatch.watch(coroutine.create(function() end), 2, 1, function() end)
     assert.has_error(function()
-          coroutine.watch(c)  -- cannot add another watch
+          corowatch.watch(c)  -- cannot add another watch
         end)
     assert.has_error(function() -- when warnlimit, also callback must be provided
-          c = coroutine.watch(coroutine.create(function() end), 2, 1)
+          c = corowatch.watch(coroutine.create(function() end), 2, 1)
         end)
     assert.has_error(function() -- either warnlimit or killlimit must be provided
-          c = coroutine.watch(coroutine.create(function() end))
+          c = corowatch.watch(coroutine.create(function() end))
         end)
     assert.has_error(function() -- warnlimit must be smaller than killimit
-          c = coroutine.watch(coroutine.create(function() end), 1, 2)
+          c = corowatch.watch(coroutine.create(function() end), 1, 2)
         end)
   end)
   
@@ -109,7 +115,7 @@ describe("testing the corowatch module", function()
     local f = function()
       second = coroutine.create(function() end)
     end
-    first = coroutine.watch(coroutine.create(f), kill_expect, warn_expect, cb_expect)
+    first = corowatch.watch(coroutine.create(f), kill_expect, warn_expect, cb_expect)
     coroutine.resume(first)
     -- now check whether 'second' inherited the watch values
     local w = corowatch._register[second]
@@ -127,7 +133,7 @@ describe("testing the corowatch module", function()
   it("checks that a timedout coroutine gets status 'dead'", function()
     local kill_expect, warn_expect, cb_expect = 2, 1, function() end
     local f = function() end
-    local c = coroutine.watch(coroutine.create(f), kill_expect, warn_expect, cb_expect)
+    local c = corowatch.watch(coroutine.create(f), kill_expect, warn_expect, cb_expect)
     assert.are_equal("suspended", coroutine.status(c))
     local w = corowatch._register[c]
     w.errmsg = "just some error that is not nil"
@@ -145,7 +151,7 @@ describe("testing the corowatch module", function()
           return
         end
         warncount = warncount + 1
-        tt[warncount] = coroutine.gettime()
+        tt[warncount] = corowatch.gettime()
         if warncount < 3 then return true end  -- continue
       end
     local f = function() 
@@ -156,10 +162,10 @@ describe("testing the corowatch module", function()
           i = i - 1
         end
       end
-    local c = coroutine.watch(coroutine.create(f), kill_expect, warn_expect, cb)
-    tt[1] = coroutine.gettime()
+    local c = corowatch.watch(coroutine.create(f), kill_expect, warn_expect, cb)
+    tt[1] = corowatch.gettime()
     local ok, msg = coroutine.resume(c)
-    tt[4] = coroutine.gettime()
+    tt[4] = corowatch.gettime()
     local w = corowatch._getwatch(c)
     assert.is_false(ok)
     assert.are_equal(msg, w.errmsg)
@@ -173,8 +179,8 @@ describe("testing the corowatch module", function()
 
   it("checks that coroutine.wrap() works as expected with a watched coroutine", function()
     local f = function() 
-        local t = coroutine.gettime() + 3
-        while t > coroutine.gettime() do
+        local t = corowatch.gettime() + 3
+        while t > corowatch.gettime() do
           -- do something silly in a loop
           local i = 0
           i = i + 1
@@ -183,7 +189,7 @@ describe("testing the corowatch module", function()
       end
     local wf
     -- create/run a watched coroutine from which 'wrap' is called
-    coroutine.resume(coroutine.watch(coroutine.create(function()
+    coroutine.resume(corowatch.watch(coroutine.create(function()
           wf = coroutine.wrap(f)
         end), 0.25))
     -- now the coroutine embedded in wf should be watched

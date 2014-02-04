@@ -1,11 +1,11 @@
 ---------------------------------------------------------------------------------------
 -- Module to watch coroutine executiontime. Coroutines running too long without
 -- yielding can be killed to prevent them from locking the Lua state.
--- The module uses LuaSocket to get the time (socket.gettime() function). If you
--- do not want that, override the coroutine.gettime() method with your own
+-- The module uses `LuaSocket` to get the time (`socket.gettime` function). If you
+-- do not want that, override the `coroutine.gettime` method with your own
 -- implementation.
 --
--- Version 0.2, [copyright (c) 2013 - Thijs Schreijer](http://www.thijsschreijer.nl)
+-- Version 1.0, [copyright (c) 2013-2014 - Thijs Schreijer](http://www.thijsschreijer.nl)
 -- @name corowatch
 -- @class module
 
@@ -100,8 +100,8 @@ local createwatch = function(coro, tkilllimit, twarnlimit, cb)
 end
 
 ---------------------------------------------------------------------------------------
--- returns current time in seconds. If not overridden, it will require luasocket and use
--- socket.gettime() to get the current time.
+-- returns current time in seconds. If not overridden, it will require `luasocket` and use
+-- `socket.gettime` to get the current time.
 M.gettime = function()
   M.gettime = require("socket").gettime
   return M.gettime()
@@ -111,12 +111,12 @@ end
 -- Protects a coroutine from running too long without yielding.
 -- @param coro coroutine to be protected
 -- @param tkilllimit (optional) time in seconds it is allowed to run without yielding
--- @param twarnlimit (optional) time in seconds it is allowed before cb is called
--- (must be smaller than tkilllimit)
+-- @param twarnlimit (optional) time in seconds it is allowed before `cb` is called
+-- (must be smaller than `tkilllimit`)
 -- @param cb (optional) callback executed when the kill or warn limit is reached. 
 -- The callback has 1 parameter (string value being either "warn" or "kill"), but runs 
 -- on the coroutine that is subject of the warning. If the "warn" callback returns a 
--- truthy value (neither false, nor nil) the coro the timeouts for kill and warn limits 
+-- truthy value (neither `false`, nor `nil`) then the timeouts for kill and warn limits 
 -- will be reset (buying more time for the coroutine to finish its business).
 -- NOTE: the callback runs inside a debughook.
 -- @return coro
@@ -131,9 +131,10 @@ end
 watch = M.watch
 
 ---------------------------------------------------------------------------------------
--- This is the same as the regular coroutine.create(), except that when the running 
+-- This is the same as the regular `coroutine.create`, except that when the running 
 -- coroutine is watched, then children spawned will also be watched with the same
 -- settings.
+-- @param f see `coroutine.create`
 M.create = function(f)
   local s = getwatch(cororunning())
   if not s then return corocreate(f) end  -- I'm not being watched
@@ -143,10 +144,11 @@ end
 create = M.create
 
 ---------------------------------------------------------------------------------------
--- This is the same as the regular coroutine.wrap(), except that when the running 
+-- This is the same as the regular `coroutine.wrap`, except that when the running 
 -- coroutine is watched, then children spawned will also be watched with the same
--- settings. To set sepecific settings for watching use coroutine.wrapf()
--- @see coroutine.wrapf
+-- settings. To set sepecific settings for watching use `coroutine.wrapf`.
+-- @param f see `coroutine.wrap`
+-- @see wrapf
 M.wrap = function(f)
   if not getwatch(cororunning()) then return corowrap(f) end  -- not watched
   local coro = create(f)
@@ -154,22 +156,24 @@ M.wrap = function(f)
 end
 
 ---------------------------------------------------------------------------------------
--- This is the same as the regular coroutine.wrap(), except that the coroutine created
+-- This is the same as the regular `coroutine.wrap`, except that the coroutine created
 -- is watched according to the parameters provided, and not according to the watch
 -- parameters of the currently running coroutine.
 -- @param f function to wrap
--- @param tkilllimit see coroutine.watch
--- @param twarnlimit see coroutine.watch
--- @param cb see coroutine.watch
--- @see coroutine.create
--- @see coroutine.wrap
+-- @param tkilllimit see `watch`
+-- @param twarnlimit see `watch`
+-- @param cb see `watch`
+-- @see create
+-- @see wrap
 M.wrapf = function(f, tkilllimit, twarnlimit, cb)
   local coro = watch(corocreate(f), tkilllimit, twarnlimit, cb)
   return function(...) return resume(coro, ...) end
 end
 
 ---------------------------------------------------------------------------------------
--- This is the same as the regular coroutine.resume().
+-- This is the same as the regular `coroutine.resume`.
+-- @param coro see `coroutine.resume`
+-- @param ... see `coroutine.resume`
 M.resume = function(coro, ...)
   assert(type(coro) == "thread", "Expected thread, got "..type(coro))
   local e = getwatch(coro)
@@ -195,7 +199,8 @@ end
 resume = M.resume
 
 ---------------------------------------------------------------------------------------
--- This is the same as the regular coroutine.yield().
+-- This is the same as the regular `coroutine.yield`.
+-- @param ... see `coroutine.yield`
 M.yield = function(...)
   local e = getwatch()
   if e then 
@@ -213,7 +218,8 @@ M.yield = function(...)
 end
 
 ---------------------------------------------------------------------------------------
--- This is the same as the regular coroutine.status().
+-- This is the same as the regular `coroutine.status`.
+-- @param coro see `coroutine.status`
 M.status = function(coro)
   if (getwatch(coro) or {}).errmsg then
     return "dead"
@@ -223,8 +229,10 @@ M.status = function(coro)
 end
 
 ---------------------------------------------------------------------------------------
--- This is the same as the regular debug.sethook(), except that when trying to set a 
+-- This is the same as the regular `debug.sethook`, except that when trying to set a 
 -- hook on a coroutine that is being watched, if will throw an error.
+-- @param coro see `debug.sethook`
+-- @param ... see `debug.sethook`
 M.sethook = function(coro, ...)
   if getwatch(coro) then
     error("Cannot set a debughook because corowatch is watching this coroutine", 2)
@@ -234,15 +242,18 @@ M.sethook = function(coro, ...)
 end
 
 ---------------------------------------------------------------------------------------
--- Export the corowatch function to an external table, or the global environment.
--- The functions exported are `create`, `yield`, `resume`, `running`, `status`, and `wrap`.
+-- Export the corowatch functions to an external table, or the global environment.
+-- The functions exported are `create`, `yield`, `resume`, `status`, `wrap`, and `wrapf`. The standard 
+-- `coroutine.running` will be added if there is no `running` value in the table yet. So 
+-- basically it exports a complete `coroutine` table + `wrapf`.
 -- If the provided table contains subtables `coroutine` and/or `debug` then it is assumed to
 -- be a function/global environment and `sethook` will be exported as well (exports will then
 -- go into the two subtables)
 -- @param t table (optional) to which to export the coroutine functions. 
 -- @return the table provided, or a new table if non was provided, with the exported functions
--- @usage-- monkey patch global environment, both coroutine and debug tables
--- require("corowatch").export(_M)
+-- @usage
+-- -- monkey patch global environment, both coroutine and debug tables
+-- require("corowatch").export(_G)
 M.export = function(t)
   t = t or {}
   local c, d 
@@ -263,7 +274,7 @@ M.export = function(t)
     c.yield = M.yield
     c.create = M.create
     c.resume = M.resume
-    c.running = M.running
+    c.running = c.running or cororunning
     c.status = M.status
     c.wrap = M.wrap
   end
