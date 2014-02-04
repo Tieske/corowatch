@@ -44,7 +44,7 @@ local cb = function(cbtype)
   end
 end
 
-print(coroutine.resume(coroutine.watch(coroutine.create(f), kill_timeout, warn_timeout, cb)))
+print(coroutine.resume(corowatch.watch(coroutine.create(f), kill_timeout, warn_timeout, cb)))
 ````
 
 When run the example code returns the following results;
