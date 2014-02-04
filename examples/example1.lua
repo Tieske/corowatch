@@ -1,4 +1,5 @@
-require("corowatch")
+local corowatch = require("corowatch")
+corowatch.export(_G)
 
 local f = function()
   local callcount = 0
@@ -22,4 +23,4 @@ local cb = function(cbtype)
   end
 end
 
-print(coroutine.resume(coroutine.watch(coroutine.create(f), kill_timeout, warn_timeout, cb)))
+print(coroutine.resume(corowatch.watch(coroutine.create(f), kill_timeout, warn_timeout, cb)))

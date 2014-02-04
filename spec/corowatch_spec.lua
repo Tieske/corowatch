@@ -22,7 +22,7 @@ describe("testing the corowatch module", function()
     local debug = {}
     local globals = {coroutine = coroutine, debug = debug}
     corowatch.export(globals)
-    --assert.are_equal(corowatch.watch,coroutine.watch)
+    assert.are_equal(corowatch.wrapf,coroutine.wrapf)
     assert.are_equal(corowatch.create,coroutine.create)
     assert.are_equal(corowatch.yield,coroutine.yield)
     assert.are_equal(corowatch.resume,coroutine.resume)

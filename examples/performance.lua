@@ -1,6 +1,7 @@
 
 --package.path = "C:\\Users\\Thijs\\Dropbox\\Lua projects\\corowatch\\src\\?.lua;"..package.path
-require("corowatch")
+local corowatch = require("corowatch")
+corowatch.export(_G)
 
 local res = 1
 
@@ -14,9 +15,9 @@ local function test1()
   collectgarbage()
   collectgarbage()
   collectgarbage("stop")
-  local t1 = coroutine.gettime()
+  local t1 = corowatch.gettime()
   testfunc()
-  t1 = coroutine.gettime() - t1
+  t1 = corowatch.gettime() - t1
   collectgarbage("restart")
   collectgarbage()
   collectgarbage()
@@ -28,9 +29,9 @@ local function test2(wrapper)
   collectgarbage()
   collectgarbage()
   collectgarbage("stop")
-  local t2 = coroutine.gettime()
+  local t2 = corowatch.gettime()
   wrapper(testfunc, 10001, 10000, function() end)()
-  t2 = coroutine.gettime() - t2
+  t2 = corowatch.gettime() - t2
   collectgarbage("restart")
   collectgarbage()
   collectgarbage()

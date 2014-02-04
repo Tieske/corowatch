@@ -277,6 +277,7 @@ M.export = function(t)
     c.running = c.running or cororunning
     c.status = M.status
     c.wrap = M.wrap
+    c.wrapf = M.wrapf
   end
   return t
 end
