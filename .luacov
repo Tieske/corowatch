@@ -1,0 +1,6 @@
+modules = {
+   ["corowatch"] = "src/corowatch.lua",
+   ["corowatch.*"] = "src"
+}
+runreport = true
+deletestats = false

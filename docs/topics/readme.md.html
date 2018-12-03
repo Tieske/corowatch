@@ -30,11 +30,11 @@
 
 
 <h2>Topics</h2>
-<ul class="$(kind=='Topics' and '' or 'nowrap'">
+<ul class="">
   <li><strong>readme</strong></li>
 </ul>
 <h2>Modules</h2>
-<ul class="$(kind=='Topics' and '' or 'nowrap'">
+<ul class="nowrap">
   <li><a href="../index.html">corowatch</a></li>
 </ul>
 
@@ -42,27 +42,25 @@
 
 <div id="content">
 
-
-<h1>corowatch</h1>
+    <h1>corowatch</h1>
 
 <p>Lua module to watch coroutine usage and kill a coroutine if it fails to yield in a timely manner. The main purpose is preventing code from locking the Lua state.
 As a convenience function coroutine.wrapf() is included which allows any function to be watched, not only coroutines.</p>
 
-
 <h1>Implementation notes</h1>
 
 <ol>
-    <li>To protect access to coroutines, the module must override the existing coroutine functions. Besides overriding the <code>create()</code>, <code>wrap()</code>, <code>status()</code>, <code>yield()</code>, and <code>resume()</code> functions, it adds additional functions <code>watch()</code>, <code>wrapf()</code> and <code>gettime()</code> to the global <a href="http://www.lua.org/manual/5.1/manual.html#5.2">coroutine</a>  table. </li>
-    <li>Additionally the global <code>debug.sethook()</code> is modified to prevent a coroutine from removing it's own 'watch' routine (from the paranoia department).</li>
-    <li><strong>Important</strong>: The default <code>gettime()</code> function loads LuaSocket to use the <code>socket.gettime()</code> function. If you do not use LuaSocket, then it might be better to replace <code>coroutine.gettime()</code> with a more lightweight implementation.</li>
+<li>To protect access to coroutines, the module must override the existing coroutine functions. Besides overriding the <code>create()</code>, <code>wrap()</code>, <code>status()</code>, <code>yield()</code>, and <code>resume()</code> functions, it adds additional functions <code>watch()</code>, <code>wrapf()</code> and <code>gettime()</code> to the global <a href="https://www.lua.org/manual/5.1/manual.html#5.2">coroutine</a> table.</li>
+<li>Additionally the global <code>debug.sethook()</code> is modified to prevent a coroutine from removing it&rsquo;s own &lsquo;watch&rsquo; routine (from the paranoia department).</li>
+<li><strong>Important</strong>: The default <code>gettime()</code> function loads LuaSocket to use the <code>socket.gettime()</code> function. If you do not use LuaSocket, then it might be better to replace <code>coroutine.gettime()</code> with a more lightweight implementation.</li>
 </ol>
 
 
 <h1>Usage</h1>
+
 <p>Usage is fairly simple, call the <code>watch()</code> method on a coroutine to protect it and provide the timeouts and callbacks as required.</p>
 
 <p>Example (see the <code>./examples</code> folder):</p>
-
 
 <pre>
 <span class="global">require</span>(<span class="string">"corowatch"</span>).export(_G) <span class="comment">-- monkey patch the globals
@@ -89,7 +87,7 @@ As a convenience function coroutine.wrapf() is included which allows any functio
   <span class="keyword">end</span>
 <span class="keyword">end</span>
 
-<span class="global">print</span>(<span class="global">coroutine</span>.resume(<span class="global">coroutine</span>.watch(<span class="global">coroutine</span>.create(f), kill_timeout, warn_timeout, cb)))
+<span class="global">print</span>(<span class="global">coroutine</span>.resume(corowatch.watch(<span class="global">coroutine</span>.create(f), kill_timeout, warn_timeout, cb)))
 </pre>
 
 
@@ -104,35 +102,32 @@ now killing <span class="global">coroutine</span>...
 </pre>
 
 
-
 <h1>Limitations</h1>
 
-<p>The mechanics of this library depend on the debug library. A debug hook is set to repeatedly (once every 10000 VM instructions) check the coroutine for a time out. When a timeout is detected, an error is generated that will kill the coroutine (coroutine status will be 'dead'). There are two ways that it won't work;</p>
+<p>The mechanics of this library depend on the debug library. A debug hook is set to repeatedly (once every 10000 VM instructions) check the coroutine for a time out. When a timeout is detected, an error is generated that will kill the coroutine (coroutine status will be &lsquo;dead&rsquo;). There are two ways that it won&rsquo;t work;</p>
 
 <ol>
-    <li>When a C function is being executed; the debughooks can only interrupt Lua code, not C code. So if C code takes too long or locks, it won't be interrupted.</li>
-    <li>When the running code that gets interrupted is inside a protected call (Lua side <code>pcall()</code>, <code>xpcall()</code> or C-side <code>lua_pcall()</code>) then the error thrown by corowatch will not kill the coroutine, but it will be caught by that protected call.</li>
+<li>When a C function is being executed; the debughooks can only interrupt Lua code, not C code. So if C code takes too long or locks, it won&rsquo;t be interrupted.</li>
+<li>When the running code that gets interrupted is inside a protected call (Lua side <code>pcall()</code>, <code>xpcall()</code> or C-side <code>lua_pcall()</code>) then the error thrown by corowatch will not kill the coroutine, but it will be caught by that protected call.</li>
 </ol>
 
-<p>To mitigate these situations; the debughook is altered once the first error is thrown. It will from there on run every 1 VM instruction. This will then rethrow the same error directly after the C function or protected call that caught the previous error. This process is repeated until the coroutine dies, and effectively cascades the error up the callstack.</p>
 
+<p>To mitigate these situations; the debughook is altered once the first error is thrown. It will from there on run every 1 VM instruction. This will then rethrow the same error directly after the C function or protected call that caught the previous error. This process is repeated until the coroutine dies, and effectively cascades the error up the callstack.</p>
 
 <h1>Documentation</h1>
 
 <p>The documentation is available <a href="http://tieske.github.com/corowatch/">online at GitHub</a></p>
 
-
 <h1>Tests</h1>
 
 <p>Tests are located in the <code>./spec</code> folder and can be run using <a href="http://olivinelabs.com/busted/">busted</a></p>
 
-
 <h1>Changes</h1>
 
 <ul>
-    <li>1.0, 4-Feb-2014, no automatic monkey patching of globals anymore</li>
-    <li>0.2, 7-Apr-2013, fixed debughook settings, improved performance</li>
-    <li>0.1, 4-Apr-2013, initial release</li>
+<li>1.0, 4-Feb-2014, no automatic monkey patching of globals anymore</li>
+<li>0.2, 7-Apr-2013, fixed debughook settings, improved performance</li>
+<li>0.1, 4-Apr-2013, initial release</li>
 </ul>
 
 
@@ -140,18 +135,17 @@ now killing <span class="global">coroutine</span>...
 
 <p>MIT license</p>
 
-<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &ldquo;Software&rdquo;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
 
 <p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
 
-<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
-
-
+<p>THE SOFTWARE IS PROVIDED &ldquo;AS IS&rdquo;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.2</a></i>
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2018-12-03 16:12:42 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

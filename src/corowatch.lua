@@ -76,7 +76,7 @@ local checkhook = function()
       e.errmsg = e.errmsg ..
        "\n============== traceback at coroutine creation time ====================\n" ..
        e.debug ..
-       "\n======================== end of traceback ==============================" 
+       "\n======================== end of traceback =============================="
     end
     error(e.errmsg, 2)
   end
@@ -113,10 +113,10 @@ end
 -- @param tkilllimit (optional) time in seconds it is allowed to run without yielding
 -- @param twarnlimit (optional) time in seconds it is allowed before `cb` is called
 -- (must be smaller than `tkilllimit`)
--- @param cb (optional) callback executed when the kill or warn limit is reached. 
--- The callback has 1 parameter (string value being either "warn" or "kill"), but runs 
--- on the coroutine that is subject of the warning. If the "warn" callback returns a 
--- truthy value (neither `false`, nor `nil`) then the timeouts for kill and warn limits 
+-- @param cb (optional) callback executed when the kill or warn limit is reached.
+-- The callback has 1 parameter (string value being either "warn" or "kill"), but runs
+-- on the coroutine that is subject of the warning. If the "warn" callback returns a
+-- truthy value (neither `false`, nor `nil`) then the timeouts for kill and warn limits
 -- will be reset (buying more time for the coroutine to finish its business).
 -- NOTE: the callback runs inside a debughook.
 -- @return coro
@@ -131,7 +131,7 @@ end
 watch = M.watch
 
 ---------------------------------------------------------------------------------------
--- This is the same as the regular `coroutine.create`, except that when the running 
+-- This is the same as the regular `coroutine.create`, except that when the running
 -- coroutine is watched, then children spawned will also be watched with the same
 -- settings.
 -- @param f see `coroutine.create`
@@ -144,7 +144,7 @@ end
 create = M.create
 
 ---------------------------------------------------------------------------------------
--- This is the same as the regular `coroutine.wrap`, except that when the running 
+-- This is the same as the regular `coroutine.wrap`, except that when the running
 -- coroutine is watched, then children spawned will also be watched with the same
 -- settings. To set sepecific settings for watching use `coroutine.wrapf`.
 -- @param f see `coroutine.wrap`
@@ -203,7 +203,7 @@ resume = M.resume
 -- @param ... see `coroutine.yield`
 M.yield = function(...)
   local e = getwatch()
-  if e then 
+  if e then
     if e.errmsg then
       -- the coro is yielding, while it is tagged with an error. This means that somewhere the error
       -- was thrown, but the coro didn't die (probably a pcall in between). The coro should have died
@@ -214,7 +214,7 @@ M.yield = function(...)
     e.warntime = nil
     e.warned = nil
   end
-  return coroyield(...) 
+  return coroyield(...)
 end
 
 ---------------------------------------------------------------------------------------
@@ -229,7 +229,7 @@ M.status = function(coro)
 end
 
 ---------------------------------------------------------------------------------------
--- This is the same as the regular `debug.sethook`, except that when trying to set a 
+-- This is the same as the regular `debug.sethook`, except that when trying to set a
 -- hook on a coroutine that is being watched, if will throw an error.
 -- @param coro see `debug.sethook`
 -- @param ... see `debug.sethook`
@@ -243,20 +243,20 @@ end
 
 ---------------------------------------------------------------------------------------
 -- Export the corowatch functions to an external table, or the global environment.
--- The functions exported are `create`, `yield`, `resume`, `status`, `wrap`, and `wrapf`. The standard 
--- `coroutine.running` will be added if there is no `running` value in the table yet. So 
+-- The functions exported are `create`, `yield`, `resume`, `status`, `wrap`, and `wrapf`. The standard
+-- `coroutine.running` will be added if there is no `running` value in the table yet. So
 -- basically it exports a complete `coroutine` table + `wrapf`.
 -- If the provided table contains subtables `coroutine` and/or `debug` then it is assumed to
 -- be a function/global environment and `sethook` will be exported as well (exports will then
 -- go into the two subtables)
--- @param t table (optional) to which to export the coroutine functions. 
+-- @param t table (optional) to which to export the coroutine functions.
 -- @return the table provided, or a new table if non was provided, with the exported functions
 -- @usage
 -- -- monkey patch global environment, both coroutine and debug tables
 -- require("corowatch").export(_G)
 M.export = function(t)
   t = t or {}
-  local c, d 
+  local c, d
   assert(type(t) == "table", "Expected table, got "..type(t))
   if (type(t.debug) == "table") or type(t.coroutine == "table") then
     -- we got a global table, so monkeypatch debug and coroutine table
@@ -283,7 +283,7 @@ M.export = function(t)
 end
 
 -- export some internals for testing if requested
-if _TEST then
+if _TEST then  -- luacheck: ignore
   M._register = register
   M._getwatch = getwatch
 end

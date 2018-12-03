@@ -12,9 +12,9 @@ local kill_timeout = 1   -- seconds
 local warn_timeout = 0.8 -- seconds
 local warncount = 0
 local cb = function(cbtype)
-  if cbtype == "kill" then 
+  if cbtype == "kill" then
     print("now killing coroutine...")
-  elseif cbtype == "warn" then 
+  elseif cbtype == "warn" then
     warncount = warncount + 1
     print("Warning, coroutine might get killed...." .. warncount)
     if warncount < 3 then

@@ -9,6 +9,7 @@ local testfunc = function()
   for n = 1,2000000 do
     res=math.sin(n/1000)
   end
+  return res
 end
 
 local function test1()
@@ -42,7 +43,7 @@ end
 for n = 1,3 do
   test1()
   test2(coroutine.wrap)
-  test2(coroutine.wrapf)
+  test2(coroutine.wrapf)   -- luacheck: ignore
 end
 
 -- run test
@@ -50,7 +51,7 @@ local t0, t1, t2, iter = 0,0,0,10
 for n = 1,iter do
   t0=test1() + t0
   t1=test2(coroutine.wrap) + t1
-  t2=test2(coroutine.wrapf) + t2
+  t2=test2(coroutine.wrapf) + t2   -- luacheck: ignore
 end
 t0=t0/iter  -- main loop
 t1=t1/iter  -- coroutine
