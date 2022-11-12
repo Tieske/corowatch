@@ -3,9 +3,5 @@ return {
     verbose = true,
     coverage = true,
     output = "gtest",
-    ROOT = {
-      "spec/",
-      --"examples/vcache.lua",
-    },
   },
 }
