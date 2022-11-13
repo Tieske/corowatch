@@ -1,5 +1,9 @@
 local corowatch
 
+if jit then -- JITted code will not call debug hooks, so disable it
+  jit.off()
+end
+
 describe("testing the corowatch module", function()
 
   setup(function()

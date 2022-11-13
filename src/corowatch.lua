@@ -5,9 +5,17 @@
 -- do not want that, override the `coroutine.gettime` method with your own
 -- implementation.
 --
--- Version 1.0, [copyright (c) 2013-2014 - Thijs Schreijer](http://www.thijsschreijer.nl)
+-- @copyright Copyright (c) 2013-2022 Thijs Schreijer
+-- @author Thijs Schreijer
+-- @license MIT, see `LICENSE.md`.
 -- @name corowatch
 -- @class module
+
+local M = {}    -- module table
+M._VERSION = "1.0"
+M._COPYRIGHT = "Copyright (c) 2013-2022 Thijs Schreijer"
+M._DESCRIPTION = "Lua module to watch coroutine usage and kill a coroutine if it fails to yield in a timely manner."
+
 
 local corocreate = coroutine.create
 local cororesume = coroutine.resume
@@ -20,8 +28,6 @@ local traceback = debug.traceback
 local watch, resume, create
 local unpack = unpack or table.unpack  -- 5.1/5.2 compat issue
 local hookcount = 10000
-
-local M = {}    -- module table
 
 -- create watch register; table indexed by coro with watch properties
 local register = setmetatable({},{__mode = "k"})  -- set weak keys
@@ -109,16 +115,17 @@ end
 
 ---------------------------------------------------------------------------------------
 -- Protects a coroutine from running too long without yielding.
--- @param coro coroutine to be protected
--- @param tkilllimit (optional) time in seconds it is allowed to run without yielding
--- @param twarnlimit (optional) time in seconds it is allowed before `cb` is called
--- (must be smaller than `tkilllimit`)
--- @param cb (optional) callback executed when the kill or warn limit is reached.
 -- The callback has 1 parameter (string value being either "warn" or "kill"), but runs
 -- on the coroutine that is subject of the warning. If the "warn" callback returns a
 -- truthy value (neither `false`, nor `nil`) then the timeouts for kill and warn limits
 -- will be reset (buying more time for the coroutine to finish its business).
+--
 -- NOTE: the callback runs inside a debughook.
+-- @tparam coroutine|nil coro coroutine to be protected, defaults to the curently running routine
+-- @tparam number|nil tkilllimit time in seconds it is allowed to run without yielding
+-- @tparam number|nil twarnlimit time in seconds it is allowed before `cb` is called
+-- (must be smaller than `tkilllimit`)
+-- @tparam function|nil cb callback executed when the kill or warn limit is reached.
 -- @return coro
 M.watch = function(coro, tkilllimit, twarnlimit, cb)
   if getwatch(coro) then error("Cannot create a watch, there already is one") end
@@ -159,10 +166,10 @@ end
 -- This is the same as the regular `coroutine.wrap`, except that the coroutine created
 -- is watched according to the parameters provided, and not according to the watch
 -- parameters of the currently running coroutine.
--- @param f function to wrap
--- @param tkilllimit see `watch`
--- @param twarnlimit see `watch`
--- @param cb see `watch`
+-- @tparam function f function to wrap
+-- @tparam number|nil tkilllimit see `watch`
+-- @tparam number|nil twarnlimit see `watch`
+-- @tparam function|nil cb see `watch`
 -- @see create
 -- @see wrap
 M.wrapf = function(f, tkilllimit, twarnlimit, cb)
@@ -249,7 +256,7 @@ end
 -- If the provided table contains subtables `coroutine` and/or `debug` then it is assumed to
 -- be a function/global environment and `sethook` will be exported as well (exports will then
 -- go into the two subtables)
--- @param t table (optional) to which to export the coroutine functions.
+-- @tparam[opt] table t table to which to export the coroutine functions.
 -- @return the table provided, or a new table if non was provided, with the exported functions
 -- @usage
 -- -- monkey patch global environment, both coroutine and debug tables

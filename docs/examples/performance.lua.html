@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Coroutine watcher</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>corowatch</h1>
+
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/example1.lua.html">example1.lua</a></li>
+  <li><a href="../examples/example2.lua.html">example2.lua</a></li>
+  <li><strong>performance.lua</strong></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../index.html">corowatch</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/01-introduction.md.html">1. Introduction</a></li>
+  <li><a href="../topics/CHANGELOG.md.html">CHANGELOG</a></li>
+  <li><a href="../topics/LICENSE.md.html">MIT License</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>performance.lua</h2>
+<pre>
+
+<span class="comment">--package.path = "C:\\Users\\Thijs\\Dropbox\\Lua projects\\corowatch\\src\\?.lua;"..package.path
+</span><span class="keyword">local</span> corowatch = <span class="global">require</span>(<span class="string">"corowatch"</span>)
+corowatch.export(_G)
+
+<span class="keyword">local</span> res = <span class="number">1</span>
+
+<span class="keyword">local</span> testfunc = <span class="keyword">function</span>()
+  <span class="keyword">for</span> n = <span class="number">1</span>,<span class="number">2000000</span> <span class="keyword">do</span>
+    res=<span class="global">math</span>.sin(n/<span class="number">1000</span>)
+  <span class="keyword">end</span>
+  <span class="keyword">return</span> res
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> test1()
+  <span class="global">collectgarbage</span>()
+  <span class="global">collectgarbage</span>()
+  <span class="global">collectgarbage</span>(<span class="string">"stop"</span>)
+  <span class="keyword">local</span> t1 = corowatch.gettime()
+  testfunc()
+  t1 = corowatch.gettime() - t1
+  <span class="global">collectgarbage</span>(<span class="string">"restart"</span>)
+  <span class="global">collectgarbage</span>()
+  <span class="global">collectgarbage</span>()
+  <span class="keyword">return</span> t1
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> test2(wrapper)
+  <span class="comment">-- wrapper = coroutine.wrap, or coroutine.wrapf
+</span>  <span class="global">collectgarbage</span>()
+  <span class="global">collectgarbage</span>()
+  <span class="global">collectgarbage</span>(<span class="string">"stop"</span>)
+  <span class="keyword">local</span> t2 = corowatch.gettime()
+  wrapper(testfunc, <span class="number">10001</span>, <span class="number">10000</span>, <span class="keyword">function</span>() <span class="keyword">end</span>)()
+  t2 = corowatch.gettime() - t2
+  <span class="global">collectgarbage</span>(<span class="string">"restart"</span>)
+  <span class="global">collectgarbage</span>()
+  <span class="global">collectgarbage</span>()
+  <span class="keyword">return</span> t2
+<span class="keyword">end</span>
+
+<span class="comment">-- warm up
+</span><span class="keyword">for</span> n = <span class="number">1</span>,<span class="number">3</span> <span class="keyword">do</span>
+  test1()
+  test2(<span class="global">coroutine</span>.wrap)
+  test2(<span class="global">coroutine</span>.wrapf)   <span class="comment">-- luacheck: ignore
+</span><span class="keyword">end</span>
+
+<span class="comment">-- run test
+</span><span class="keyword">local</span> t0, t1, t2, iter = <span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">10</span>
+<span class="keyword">for</span> n = <span class="number">1</span>,iter <span class="keyword">do</span>
+  t0=test1() + t0
+  t1=test2(<span class="global">coroutine</span>.wrap) + t1
+  t2=test2(<span class="global">coroutine</span>.wrapf) + t2   <span class="comment">-- luacheck: ignore
+</span><span class="keyword">end</span>
+t0=t0/iter  <span class="comment">-- main loop
+</span>t1=t1/iter  <span class="comment">-- coroutine
+</span>t2=t2/iter  <span class="comment">-- protected coroutine
+</span>
+<span class="global">print</span>(<span class="string">"Mainloop :"</span>,t0)
+<span class="global">print</span>(<span class="string">"Coroutine:"</span>,t1)
+<span class="global">print</span>(<span class="string">"Corowatch:"</span>,t2)
+<span class="global">print</span>(<span class="string">"corowatch is "</span> .. <span class="global">math</span>.floor((t2-t1)/t1 *<span class="number">100</span>) .. <span class="string">"% slower than unprotected"</span>)
+<span class="global">print</span>(<span class="string">"coroutine is "</span> .. <span class="global">math</span>.floor((t0-t1)/t0 *<span class="number">100</span>) .. <span class="string">"% faster than the main loop"</span>)</pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2022-11-13 23:11:57 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
