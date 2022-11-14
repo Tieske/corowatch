@@ -22,6 +22,7 @@
 ### unreleased
 
 - in Lua 5.1, sethook should be called without "coro" for the main thread
+- make pack/unpack nil-safe
 
 ### Version 1.0, released 04-Feb-2014
 

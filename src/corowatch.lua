@@ -26,8 +26,13 @@ local coroyield = coroutine.yield
 local _sethook = debug.sethook
 local traceback = debug.traceback
 local watch, resume, create
-local unpack = unpack or table.unpack  -- 5.1/5.2 compat issue
 local hookcount = 10000
+
+
+local _unpack = table.unpack or unpack
+local function pack (...) return { n = select('#', ...), ...} end
+local function unpack(t, i, j) return _unpack(t, i or 1, j or t.n or #t) end
+
 
 -- create watch register; table indexed by coro with watch properties
 local register = setmetatable({},{__mode = "k"})  -- set weak keys
@@ -127,7 +132,7 @@ end
 -- will be reset (buying more time for the coroutine to finish its business).
 --
 -- NOTE: the callback runs inside a debughook.
--- @tparam coroutine|nil coro coroutine to be protected, defaults to the curently running routine
+-- @tparam coroutine|nil coro coroutine to be protected, defaults to the currently running routine
 -- @tparam number|nil tkilllimit time in seconds it is allowed to run without yielding
 -- @tparam number|nil twarnlimit time in seconds it is allowed before `cb` is called
 -- (must be smaller than `tkilllimit`)
@@ -202,7 +207,7 @@ M.resume = function(coro, ...)
     if e.twarnlimit then e.warntime = t + e.twarnlimit end
     e.warned = nil
   end
-  local r = { cororesume(coro, ...) }
+  local r = pack(cororesume(coro, ...))
   if e and e.errmsg then
     return false, e.errmsg
   else
