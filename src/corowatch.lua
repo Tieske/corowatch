@@ -23,7 +23,7 @@ local cororunning = coroutine.running
 local corostatus = coroutine.status
 local corowrap = coroutine.wrap
 local coroyield = coroutine.yield
-local sethook = debug.sethook
+local _sethook = debug.sethook
 local traceback = debug.traceback
 local watch, resume, create
 local unpack = unpack or table.unpack  -- 5.1/5.2 compat issue
@@ -45,6 +45,12 @@ local register = setmetatable({},{__mode = "k"})  -- set weak keys
 
 
 local mainthread = {}  -- for 5.1 where there is no main thread access, running() returns nil
+local function sethook(coro, ...)  -- compatibility for Lua 5.1
+  if coro == mainthread then
+    return _sethook(...)
+  end
+  return _sethook(coro, ...)
+end
 
 -- Gets the entry for the coro from the coroutine register.
 -- @return the coroutine entry from the register

@@ -19,6 +19,10 @@
   `luarocks install corowatch`
 
 
+### unreleased
+
+- in Lua 5.1, sethook should be called without "coro" for the main thread
+
 ### Version 1.0, released 04-Feb-2014
 
 - no automatic monkey patching of globals anymore
