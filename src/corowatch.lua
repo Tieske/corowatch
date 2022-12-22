@@ -150,11 +150,27 @@ end
 -- @tparam[opt=10000] number hookcount the hookcount to use (every `x` number of VM instructions check the limits)
 -- @return coro
 M.watch = function(coro, tkilllimit, twarnlimit, cb, hookcount)
-  if getwatch(coro) then error("Cannot create a watch, there already is one") end
+  if getwatch(coro) then
+    error("Cannot create a watch, there already is one")
+  end
   assert(tkilllimit or twarnlimit, "Either kill limit or warn limit must be provided")
-  if twarnlimit then assert(cb, "A callback function must be provided when adding a warnlimit") end
-  if tkilllimit and twarnlimit then assert(tkilllimit>twarnlimit, "The warnlimit must be smaller than the killlimit") end
-  if hookcount then assert(hookcount >= 1, "The hookcount cannot be less than 1") end
+  if twarnlimit ~= nil then
+    assert(type(twarnlimit) == "number", "Expected warn-limit to be a number")
+    assert(cb, "A callback function must be provided when adding a warnlimit")
+  end
+  if tkilllimit ~= nil then
+    assert(type(tkilllimit) == "number", "Expected kill-limit to be a number")
+    if twarnlimit then
+      assert(tkilllimit>twarnlimit, "The warnlimit must be smaller than the killlimit")
+    end
+  end
+  if cb ~= nil then
+    assert(type(cb) == "function", "Expected callback to be a function")
+  end
+  if hookcount ~= nil then
+    assert(type(hookcount) == "number", "Expected hookcount to be a number")
+    assert(hookcount >= 1, "The hookcount cannot be less than 1")
+  end
   createwatch(coro, tkilllimit, twarnlimit, cb, hookcount)
   return coro
 end
