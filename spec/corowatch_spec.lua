@@ -38,14 +38,15 @@ describe("testing the corowatch module", function()
   end)
 
   it("Checks a coroutine being registered when watched", function()
-    local kill_expect, warn_expect, cb_expect = 2, 1, function() end
+    local kill_expect, warn_expect, cb_expect, hookcount_expect = 2, 1, function() end, 123
     assert.is_nil(next(corowatch._register))  -- check register is empty when starting
-    local c = corowatch.watch(coroutine.create(function() end), kill_expect, warn_expect, cb_expect)
+    local c = corowatch.watch(coroutine.create(function() end), kill_expect, warn_expect, cb_expect, hookcount_expect)
     local w = corowatch._register[c]
     assert.not_is_nil(w)
     assert.are_equal(kill_expect, w.tkilllimit)
     assert.are_equal(warn_expect, w.twarnlimit)
     assert.are_equal(cb_expect, w.cb)
+    assert.are_equal(hookcount_expect, w.hookcount)
     assert.is_nil(w.warned)
     assert.is_nil(w.errmsg)
     assert.is_nil(w.killtime)
@@ -112,15 +113,18 @@ describe("testing the corowatch module", function()
     assert.has_error(function() -- warnlimit must be smaller than killimit
           c = corowatch.watch(coroutine.create(function() end), 1, 2)
         end)
+    assert.has_error(function() -- hookcount must be >= 1
+          c = corowatch.watch(coroutine.create(function() end), 1, 2, -1)
+        end)
   end)
 
   it("checks that a coroutine created from a watched coroutine is also watched", function()
-    local kill_expect, warn_expect, cb_expect = 2, 1, function() end
+    local kill_expect, warn_expect, cb_expect, hookcount_expect = 2, 1, function() end, 123
     local first, second
     local f = function()
       second = coroutine.create(function() end)
     end
-    first = corowatch.watch(coroutine.create(f), kill_expect, warn_expect, cb_expect)
+    first = corowatch.watch(coroutine.create(f), kill_expect, warn_expect, cb_expect, hookcount_expect)
     coroutine.resume(first)
     -- now check whether 'second' inherited the watch values
     local w = corowatch._register[second]
@@ -128,6 +132,7 @@ describe("testing the corowatch module", function()
     assert.are_equal(kill_expect, w.tkilllimit)
     assert.are_equal(warn_expect, w.twarnlimit)
     assert.are_equal(cb_expect, w.cb)
+    assert.are_equal(hookcount_expect, w.hookcount)
     assert.is_nil(w.warned)
     assert.is_nil(w.errmsg)
     assert.is_nil(w.killtime)

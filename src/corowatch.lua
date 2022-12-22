@@ -26,13 +26,14 @@ local coroyield = coroutine.yield
 local _sethook = debug.sethook
 local traceback = debug.traceback
 local watch, resume, create
-local hookcount = 10000
+local default_hookcount = 10000
 
 
-local _unpack = table.unpack or unpack
-local function pack (...) return { n = select('#', ...), ...} end
-local function unpack(t, i, j) return _unpack(t, i or 1, j or t.n or #t) end
-
+local pack, unpack do -- pack/unpack to create/honour the .n field for nil-safety
+  local _unpack = _G.table.unpack or _G.unpack
+  function pack (...) return { n = select('#', ...), ...} end
+  function unpack(t, i, j) return _unpack(t, i or 1, j or t.n or #t) end
+end
 
 -- create watch register; table indexed by coro with watch properties
 local register = setmetatable({},{__mode = "k"})  -- set weak keys
@@ -46,6 +47,7 @@ local register = setmetatable({},{__mode = "k"})  -- set weak keys
 --   errmsg = errormessage if timedout, so if set, the coro should be dead
 --   hook = function; the debughook in use
 --   debug = debug.traceback() at the time of protecting
+--   hookcount = the count setting for the debughook
 -- }
 
 
@@ -103,14 +105,16 @@ end
 -- will be overwritten (in the existing entry) with the new values.
 -- @param coro coroutine for which to create the entry
 -- @return the entry created
-local createwatch = function(coro, tkilllimit, twarnlimit, cb)
+local createwatch = function(coro, tkilllimit, twarnlimit, cb, hookcount)
   coro = coro or cororunning() or mainthread
+  hookcount = hookcount or default_hookcount
   local entry = register[coro] or {}
   entry.tkilllimit = tkilllimit
   entry.twarnlimit = twarnlimit
   entry.cb = cb
   entry.hook = checkhook
   entry.debug = traceback()
+  entry.hookcount = hookcount
   sethook(coro, entry.hook, "", hookcount)
   register[coro] = entry
   return entry
@@ -131,19 +135,27 @@ end
 -- truthy value (neither `false`, nor `nil`) then the timeouts for kill and warn limits
 -- will be reset (buying more time for the coroutine to finish its business).
 --
+-- The `hookcount` default of 10000 will ensure offending coroutines are caught with
+-- limited performance impact. To better narrow down any offending code that takes too long,
+-- this can be set to a lower value (eg. set it to 1, and it will break right after
+-- the instruction that tripped the limit). But the smaller the value, the higher the
+-- performance cost.
+--
 -- NOTE: the callback runs inside a debughook.
 -- @tparam coroutine|nil coro coroutine to be protected, defaults to the currently running routine
 -- @tparam number|nil tkilllimit time in seconds it is allowed to run without yielding
 -- @tparam number|nil twarnlimit time in seconds it is allowed before `cb` is called
 -- (must be smaller than `tkilllimit`)
 -- @tparam function|nil cb callback executed when the kill or warn limit is reached.
+-- @tparam[opt=10000] number hookcount the hookcount to use (every `x` number of VM instructions check the limits)
 -- @return coro
-M.watch = function(coro, tkilllimit, twarnlimit, cb)
+M.watch = function(coro, tkilllimit, twarnlimit, cb, hookcount)
   if getwatch(coro) then error("Cannot create a watch, there already is one") end
   assert(tkilllimit or twarnlimit, "Either kill limit or warn limit must be provided")
   if twarnlimit then assert(cb, "A callback function must be provided when adding a warnlimit") end
   if tkilllimit and twarnlimit then assert(tkilllimit>twarnlimit, "The warnlimit must be smaller than the killlimit") end
-  createwatch(coro, tkilllimit, twarnlimit, cb)
+  if hookcount then assert(hookcount >= 1, "The hookcount cannot be less than 1") end
+  createwatch(coro, tkilllimit, twarnlimit, cb, hookcount)
   return coro
 end
 watch = M.watch
@@ -157,7 +169,7 @@ M.create = function(f)
   local s = getwatch(cororunning())
   if not s then return corocreate(f) end  -- I'm not being watched
   -- create and add watch
-  return watch(corocreate(f), s.tkilllimit, s.twarnlimit, s.cb)
+  return watch(corocreate(f), s.tkilllimit, s.twarnlimit, s.cb, s.hookcount)
 end
 create = M.create
 
@@ -181,10 +193,11 @@ end
 -- @tparam number|nil tkilllimit see `watch`
 -- @tparam number|nil twarnlimit see `watch`
 -- @tparam function|nil cb see `watch`
+-- @tparam[opt=10000] number hookcount see `watch`
 -- @see create
 -- @see wrap
-M.wrapf = function(f, tkilllimit, twarnlimit, cb)
-  local coro = watch(corocreate(f), tkilllimit, twarnlimit, cb)
+M.wrapf = function(f, tkilllimit, twarnlimit, cb, hookcount)
+  local coro = watch(corocreate(f), tkilllimit, twarnlimit, cb, hookcount)
   return function(...) return resume(coro, ...) end
 end
 
