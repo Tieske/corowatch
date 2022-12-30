@@ -12,7 +12,7 @@
 -- @class module
 
 local M = {}    -- module table
-M._VERSION = "1.0"
+M._VERSION = "1.1"
 M._COPYRIGHT = "Copyright (c) 2013-2022 Thijs Schreijer"
 M._DESCRIPTION = "Lua module to watch coroutine usage and kill a coroutine if it fails to yield in a timely manner."
 

@@ -12,14 +12,14 @@
 - clean and render the docs: run `make clean` and `make docs`
 - commit the changes as `release X.Y.Z`
 - push the commit, and create a release PR
-- after merging tag the release commit with `vX.Y.Z`
+- after merging tag the release commit with `version_X.Y.Z`
 - upload to LuaRocks:<br/>
   `luarocks upload ./rockspecs/corowatch-X.Y.Z-1.rockspec --api-key=ABCDEFGH`
 - test the newly created rock:<br/>
   `luarocks install corowatch`
 
 
-### unreleased
+### Version 1.1, released 30-Dec-2022
 
 - feat: make `hookcount` configurable
 - fix: in Lua 5.1, sethook should be called without "coro" for the main thread
